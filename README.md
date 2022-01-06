@@ -1,5 +1,6 @@
+![mlGym_logo](https://user-images.githubusercontent.com/47029859/148429624-47b118cc-86c4-4720-8ddf-4f134ff43c5c.png)
 
-![mlGym_logo](https://user-images.githubusercontent.com/47029859/148429538-c15df7b3-5686-42e6-b143-603b239b7184.png)
+
 
 # MLgym 
 
