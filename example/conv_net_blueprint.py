@@ -1,4 +1,5 @@
 from typing import Dict, List, Any
+from ml_gym.modes import RunMode
 import torch
 from conv_net import ConvNet
 from ml_gym.blueprints.constructables import ModelRegistryConstructable
@@ -41,7 +42,7 @@ class MyModelRegistryConstructable(ModelRegistryConstructable):
 
 
 class ConvNetBluePrint(BluePrint):
-    def __init__(self, run_mode: AbstractGymJob.Mode, job_type: AbstractGymJob.Type, config: Dict, epochs: int,
+    def __init__(self, run_mode: RunMode, job_type: AbstractGymJob.Type, config: Dict, epochs: int,
                  dashify_logging_dir: str, grid_search_id: str,
                  run_id: str, external_injection: Dict[str, Any] = None):
         model_name = "conv_net"
@@ -64,11 +65,10 @@ class ConvNetBluePrint(BluePrint):
         components = component_factory.build_components_from_config(config, component_names)
         return components
 
-    def construct(self) -> 'AbstractGymJob':
+    def construct(self) -> AbstractGymJob:
         experiment_info = self.get_experiment_info()
         component_names = ["model", "trainer", "optimizer", "evaluator"]
         components = ConvNetBluePrint.construct_components(self.config, component_names, self.external_injection)
 
-        gym_job = GymJobFactory.get_gym_job(self.run_mode, job_type=self.job_type,
-                                            experiment_info=experiment_info, epochs=self.epochs, **components)
+        gym_job = GymJobFactory.get_gym_job(self.run_mode, job_type=self.job_type, experiment_info=experiment_info, epochs=self.epochs, **components)
         return gym_job

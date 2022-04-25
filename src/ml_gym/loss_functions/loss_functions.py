@@ -42,7 +42,7 @@ class Loss(ABC):
 class LPLoss(Loss):
     def __init__(self, target_subscription_key: str, prediction_subscription_key: str, root: int = 1, exponent: int = 2,
                  sample_selection_fun: Callable[[InferenceResultBatch], List[bool]] = None,
-                 tag: str = "", average_batch_loss: bool = True):
+                 tag: str = "", average_batch_loss: bool = True, avg_per_feature_loss: bool = False):
         super().__init__(tag)
         self.root = root
         self.exponent = exponent
@@ -50,6 +50,7 @@ class LPLoss(Loss):
         self.prediction_subscription_key = prediction_subscription_key
         self.sample_selection_fun = sample_selection_fun
         self.average_batch_loss = average_batch_loss
+        self.avg_per_feature_loss = avg_per_feature_loss
 
     def __call__(self, forward_batch: InferenceResultBatch) -> torch.Tensor:
         # here: predictions are reconstructions and targets are the input vectors
@@ -65,6 +66,8 @@ class LPLoss(Loss):
         loss_values = (torch.sum((p - t).abs() ** self.exponent, dim=1) ** (1 / self.root))
         if self.average_batch_loss:
             loss_values = torch.sum(loss_values)/len(loss_values)
+        if self.avg_per_feature_loss:
+            loss_values = loss_values/p.shape[1]
         return loss_values
 
 
@@ -105,7 +108,7 @@ class CrossEntropyLoss(Loss):
         # For the CrossEntropyLoss API we need them to be squeezed torch.Tensor([1, 2, ..., 1])
         t = inference_result_batch.get_targets(self.target_subscription_key).long()
         p = inference_result_batch.get_predictions(self.prediction_subscription_key)
-        loss_values = nn.CrossEntropyLoss(reduction="none")(p, t)
+        loss_values = nn.CrossEntropyLoss(reduction="none")(p, t.flatten())
         if self.average_batch_loss:
             loss_values = torch.sum(loss_values)/len(loss_values)
         return loss_values

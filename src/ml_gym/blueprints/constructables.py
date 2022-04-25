@@ -22,7 +22,7 @@ from ml_gym.data_handling.postprocessors.factory import ModelGymInformedIterator
 from ml_gym.data_handling.postprocessors.collator import Collator
 from ml_gym.gym.post_processing import PredictPostProcessingIF, SoftmaxPostProcessorImpl, \
     ArgmaxPostProcessorImpl, SigmoidalPostProcessorImpl, DummyPostProcessorImpl, PredictPostProcessing, \
-    BinarizationPostProcessorImpl
+    BinarizationPostProcessorImpl, MaxOrMinPostProcessorImpl
 from data_stack.dataset.meta import MetaFactory
 from data_stack.dataset.iterator import InformedDatasetIteratorIF
 from functools import partial
@@ -232,6 +232,7 @@ class DataLoadersConstructable(ComponentConstructable):
     weigthed_sampling_split_name: str = None
     label_pos: int = 2
     seeds: Dict[str, int] = field(default_factory=dict)
+    drop_last: bool = False
 
     def _construct_impl(self) -> DatasetLoader:
         dataset_iterators_dict = self.get_requirement("iterators")
@@ -241,22 +242,8 @@ class DataLoadersConstructable(ComponentConstructable):
                                                               collate_fn=collator,
                                                               weigthed_sampling_split_name=self.weigthed_sampling_split_name,
                                                               label_pos=self.label_pos,
-                                                              seeds=self.seeds)
-
-
-@dataclass
-class ExperimentInfoConstructable(ComponentConstructable):
-    log_dir: str = ""
-    grid_search_id: str = ""
-    run_id: str = ""
-    model_name: str = ""
-
-    def _construct_impl(self):
-        return DashifyLogger.create_new_experiment(log_dir=self.log_dir,
-                                                   subfolder_id=self.grid_search_id,
-                                                   model_name=self.model_name,
-                                                   dataset_name="",  # TODO fix ugly hack
-                                                   run_id=self.run_id)
+                                                              seeds=self.seeds,
+                                                              drop_last=self.drop_last)
 
 
 @dataclass
@@ -367,6 +354,7 @@ class PredictionPostProcessingRegistryConstructable(ComponentConstructable):
     class FunctionKeys:
         SOFT_MAX = "SOFT_MAX"
         ARG_MAX = "ARG_MAX"
+        MIN_OR_MAX = "MIN_OR_MAX"
         SIGMOIDAL = "SIGMOIDAL"
         BINARIZATION = "BINARIZATION"
         DUMMY = "DUMMY"
@@ -376,6 +364,7 @@ class PredictionPostProcessingRegistryConstructable(ComponentConstructable):
         default_mapping: Dict[str, PredictPostProcessingIF] = {
             PredictionPostProcessingRegistryConstructable.FunctionKeys.SOFT_MAX: SoftmaxPostProcessorImpl,
             PredictionPostProcessingRegistryConstructable.FunctionKeys.ARG_MAX: ArgmaxPostProcessorImpl,
+            PredictionPostProcessingRegistryConstructable.FunctionKeys.MIN_OR_MAX: MaxOrMinPostProcessorImpl,
             PredictionPostProcessingRegistryConstructable.FunctionKeys.SIGMOIDAL: SigmoidalPostProcessorImpl,
             PredictionPostProcessingRegistryConstructable.FunctionKeys.BINARIZATION: BinarizationPostProcessorImpl,
             PredictionPostProcessingRegistryConstructable.FunctionKeys.DUMMY: DummyPostProcessorImpl

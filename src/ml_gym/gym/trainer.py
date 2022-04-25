@@ -32,6 +32,7 @@ class TrainComponent(StatefulComponent):
 
     def train_epoch(self, model: NNModel, optimizer: OptimizerAdapter, data_loader: DatasetLoader,
                     device: torch.device, epoch: int) -> NNModel:
+        data_loader.device = device
         self.map_batches(fun=self.train_batch,
                          loader=data_loader,
                          fun_params={"device": device,
@@ -125,6 +126,7 @@ class Trainer(TrainerIF):
     def train_epoch(self, model: NNModel, optimizer: OptimizerAdapter, device: torch.device) -> NNModel:
         if self.current_epoch > self.num_epochs:
             raise ModelAlreadyFullyTrainedError(f"Model has been already trained for {self.current_epoch}/{self.num_epochs} epochs.")
+        self.train_loader.device = device
         model = self.train_component.train_epoch(model, optimizer, self.train_loader, device, self.current_epoch)
         self.current_epoch += 1
         return model
