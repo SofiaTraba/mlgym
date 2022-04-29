@@ -1,19 +1,8 @@
 from abc import abstractmethod
-from enum import IntEnum, Enum
 from ml_gym.blueprints.blue_prints import BluePrint
+from ml_gym.multiprocessing.states import JobStatus, JobType
 import torch
 from typing import Callable, Dict, List
-
-
-class JobType(IntEnum):
-    CALC = 1
-    TERMINATE = 2
-
-
-class JobStatus(str, Enum):
-    INIT = "INIT"
-    RUNNING = "RUNNING"
-    DONE = "DONE"
 
 
 class Job:
@@ -30,7 +19,7 @@ class Job:
         self.executing_process_id = -1
         self.error = None
         self.stacktrace = None
-        self._device: torch.device = None
+        self._device: torch.device = ""
 
     @property
     def device(self) -> torch.device:
@@ -38,7 +27,10 @@ class Job:
 
     @property
     def experiment_id(self) -> str:
-        return self.blue_print.get_experiment_id()
+        if self.blue_print is not None:
+            return self.blue_print.get_experiment_id()
+        else:
+            return None
 
     @device.setter
     def device(self, value: torch.device):
