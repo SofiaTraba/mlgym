@@ -91,11 +91,11 @@ if __name__ == '__main__':
     app = Flask(__name__, template_folder="template")
     app.config['SECRET_KEY'] = 'secret!'
 
-    port = 7000
+    port = 11127
     host = "localhost"
     async_mode = None
 
-    log_file_path = "/home/mluebberin/repositories/github/private_workspace/mlgym/src/ml_gym/backend/streaming/log.txt"
+    log_file_path = "/Users/sofiatraba/Documents/GitHub/mlgym/src/ml_gym/backend/streaming/template/test.txt"
 
     message_delay = 0.5  # in seconds
 

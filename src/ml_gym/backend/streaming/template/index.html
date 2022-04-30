@@ -15,7 +15,7 @@
             // Connect to the Socket.IO server.
             // The connection URL has the following format, relative to the current page:
             //     http[s]://<domain>:<port>[/<namespace>]
-            var socket = io("http://127.0.0.1:7000");
+            var socket = io("http://localhost:11127");
 
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
@@ -33,7 +33,26 @@
                 msg_json = JSON.parse(msg)
                 msg_string = JSON.stringify(msg_json)
 
-                $('#log').append('<br>' + $('<div/>').text('<mlgym_event>: ' + msg_string).html());
+                //$('#log').append('<br>' + $('<div/>').text('<mlgym_event>: ' + msg_string).html());
+                if (msg_json.data.event_type === "job_status"){
+                    $("#jobs_table").append("<tr><td>" + msg_json.event_id + "<td>" + msg_json.data.event_type + "</td></tr>");
+
+                }
+          //    $('#log').append('<br>' + $('<div/>').text('<id>: ' + msg_json.event_id).html());
+          //    $('#log').append('<br>' + $('<div/>').text('<type of event>: ' + msg_json.data.event_type).html());
+          //    if (msg_json.data.event_type === "experiment_status"){
+                  $("#experiment_table").append("<tr><td>" + msg_json.data.payload.experiment_id +
+                    "<td>" + msg_json.data.payload.status + "</td>" +
+                    "<td>" + msg_json.data.payload.num_epochs + "</td>" +
+                    "<td>" + msg_json.data.payload.current_split + "</td></tr>");
+          //        $('#log').append('<br>' + $('<div/>').text("testing Payload composants").html());
+          //        $('#log').append('<br>' + $('<div/>').text('<payload>: ' + msg_json.data.payload.experiment_id).html());
+          //        $('#log').append('<br>' + $('<div/>').text('<type of experiment>: ' + msg_json.data.payload.status).html());
+          //        $('#log').append('<br>' + $('<div/>').text('<num epochs>: ' + msg_json.data.payload.num_epochs).html());
+          //        $('#log').append('<br>' + $('<div/>').text('<split>: ' + msg_json.data.payload.current_split).html());
+          //       }
+
+
                 if (cb)
                     cb();
             });
@@ -80,6 +99,33 @@
         Average ping/pong latency: <b><span id="ping-pong"></span>ms</b>
     </p>
     <h2>Log messages</h2>
-    <div id="log"></div>
+    <h3>Jobs</h3>
+    <div id="job"></div>
+    <table id="jobs_table">
+      <tr>
+        <th>ID</th>
+        <th>Event type</th>
+      </tr>
+      <tr>
+      </tr>
+      <tr>
+      </tr>
+    </table>
+    <h3>Experiments</h3>
+    <div id="experiment"></div>
+    <table id="experiment_table">
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Epochs</th>
+        <th>Current Split</th>
+      </tr>
+      <tr>
+      </tr>
+      <tr>
+      </tr>
+    </table>
+
+
 </body>
 </html>
