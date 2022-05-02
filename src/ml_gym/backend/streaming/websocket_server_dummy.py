@@ -95,7 +95,7 @@ if __name__ == '__main__':
     host = "localhost"
     async_mode = None
 
-    log_file_path = "/Users/sofiatraba/Documents/GitHub/mlgym/src/ml_gym/backend/streaming/template/test.txt"
+    log_file_path = "/Users/sofiatraba/Documents/GitHub/mlgym/src/ml_gym/backend/streaming/template/log.txt"
 
     message_delay = 0.5  # in seconds
 

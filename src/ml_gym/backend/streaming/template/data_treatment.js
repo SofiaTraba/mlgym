@@ -1,0 +1,78 @@
+$(document).ready(function () {
+    // Connect to the Socket.IO server.
+    // The connection URL has the following format, relative to the current page:
+    //     http[s]://<domain>:<port>[/<namespace>]
+    var socket = io("http://localhost:11127");
+
+    // Event handler for new connections.
+    // The callback function is invoked when a connection with the
+    // server is established.
+    socket.on('connect', function () {
+        socket.emit('join', { rooms: ['mlgym_event_subscribers'] });
+
+    });
+
+    // Event handler for server sent data.
+    // The callback function is invoked whenever the server emits data
+    // to the client. The data is then displayed in the "Received"
+    // section of the page.
+    socket.on('mlgym_event', function (msg, cb) {
+        msg_json = JSON.parse(msg)
+        msg_string = JSON.stringify(msg_json)
+
+        //$('#log').append('<br>' + $('<div/>').text('<mlgym_event>: ' + msg_string).html());
+        if (msg_json.data.event_type === "job_status"){
+            $("#jobs_table").append("<tr><td>" + msg_json.event_id + "<td>" + msg_json.data.event_type + "</td></tr>");
+
+        }
+  //    $('#log').append('<br>' + $('<div/>').text('<id>: ' + msg_json.event_id).html());
+  //    $('#log').append('<br>' + $('<div/>').text('<type of event>: ' + msg_json.data.event_type).html());
+        if (msg_json.data.event_type === "experiment_status"){
+          $("#experiment_table").append("<tr><td>" + msg_json.data.payload.experiment_id +
+            "<td>" + msg_json.data.payload.status + "</td>" +
+            "<td>" + msg_json.data.payload.num_epochs + "</td>" +
+            "<td>" + msg_json.data.payload.current_split + "</td></tr>");
+        }
+  //        $('#log').append('<br>' + $('<div/>').text("testing Payload composants").html());
+  //        $('#log').append('<br>' + $('<div/>').text('<payload>: ' + msg_json.data.payload.experiment_id).html());
+  //        $('#log').append('<br>' + $('<div/>').text('<type of experiment>: ' + msg_json.data.payload.status).html());
+  //        $('#log').append('<br>' + $('<div/>').text('<num epochs>: ' + msg_json.data.payload.num_epochs).html());
+  //        $('#log').append('<br>' + $('<div/>').text('<split>: ' + msg_json.data.payload.current_split).html());
+  //       }
+
+
+        if (cb)
+            cb();
+    });
+
+    socket.on('server_log_message', function (msg, cb) {
+        $('#log').append('<br>' + $('<div/>').text('<server_log_message>: ' + msg).html());
+        if (cb)
+            cb();
+    });
+
+
+    // Interval function that tests message latency by sending a "ping"
+    // message. The server then responds with a "pong" message and the
+    // round trip time is measured.
+    var ping_pong_times = [];
+    var start_time;
+    window.setInterval(function () {
+        start_time = (new Date).getTime();
+        $('#transport').text(socket.io.engine.transport.name);
+        socket.emit('ping');
+    }, 1000);
+
+    // Handler for the "pong" message. When the pong is received, the
+    // time from the ping is stored, and the average of the last 30
+    // samples is average and displayed.
+    socket.on('pong', function () {
+        var latency = (new Date).getTime() - start_time;
+        ping_pong_times.push(latency);
+        ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+        var sum = 0;
+        for (var i = 0; i < ping_pong_times.length; i++)
+            sum += ping_pong_times[i];
+        $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+    });
+});
